@@ -7,7 +7,7 @@ import http from "http";
 import { Container } from "inversify";
 import { InversifyExpressServer } from "inversify-express-utils";
 import { Server } from "socket.io";
-import { WebSocket } from "./socket";
+import { WebSocket } from "./utils/socket";
 import "./controller/test.controller";
 
 export class Application {

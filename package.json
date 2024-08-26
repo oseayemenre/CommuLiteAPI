@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "nodemon bootstrap.ts",
     "build": "tsc -p .",
-    "start": "node dist/bootstrap.js"
+    "start": "node dist/bootstrap.js",
+    "test:watch": "jest --watchAll",
+    "test": "jest --watchAll --detectOpenHandles"
   },
   "keywords": [],
   "author": "",

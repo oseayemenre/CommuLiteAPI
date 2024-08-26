@@ -7,8 +7,8 @@
     "dev": "nodemon bootstrap.ts",
     "build": "tsc -p .",
     "start": "node dist/bootstrap.js",
-    "test": "jest --watchAll --detectOpenHandles",
-    "test:watch": "jest --watchAll",
+    "test": "jest --detectOpenHandles",
+    "test:watch": "jest --watchAll --detectOpenHandles",
     "lint": "eslint **/*.ts",
     "format:check": "prettier **/*.ts --check",
     "format:write": "prettier **/*.ts --write"

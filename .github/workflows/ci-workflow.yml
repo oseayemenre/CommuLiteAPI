@@ -1,0 +1,27 @@
+name: CI-workflow
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: [ubuntu-latest]
+    strategy:
+      matrix:
+        node-version: [20.x]
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+      - name: Install Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: Install Packages
+        run: npm ci
+      - name: Run Linter
+        run: npm run lint
+      - name: Run Prettier
+        run: npm run format:check
+      - name: Run tests
+        run: npm test

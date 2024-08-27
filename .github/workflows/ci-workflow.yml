@@ -21,8 +21,6 @@ jobs:
         run: npm ci
       - name: Run Linter
         run: npm run lint
-      - name: Print working directory
-        run: pwd
       - name: Run Prettier
         run: npm run format:check
       - name: Run tests

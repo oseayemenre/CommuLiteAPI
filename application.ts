@@ -8,7 +8,15 @@ import { Container } from "inversify";
 import { InversifyExpressServer } from "inversify-express-utils";
 import { Server } from "socket.io";
 import { WebSocket } from "./utils/socket";
-import "./controller/test.controller";
+import "./controller/user.controller";
+import { IUserRepository, IUserService } from "./interface/user.interface";
+import { INTERFACE_TYPE } from "./utils/dependency";
+import { UserService } from "./service/user.service";
+import { UserRepository } from "./repository/user.repository";
+import { IBcrypt } from "./interface/bcrypt.interface";
+import { Bcrypt } from "./utils/bcrypt";
+import { ICommunicationService } from "./interface/communication-service.interface";
+import { TextBelt } from "./utils/text-belt";
 
 export class Application {
   private readonly container: Container;
@@ -21,7 +29,18 @@ export class Application {
     this.inversify_server = new InversifyExpressServer(this.container);
   }
 
-  private configureContainer(): void {}
+  private configureContainer(): void {
+    this.container
+      .bind<IUserService>(INTERFACE_TYPE.UserService)
+      .to(UserService);
+    this.container
+      .bind<IUserRepository>(INTERFACE_TYPE.UserRepository)
+      .to(UserRepository);
+    this.container.bind<IBcrypt>(INTERFACE_TYPE.Bcrypt).to(Bcrypt);
+    this.container
+      .bind<ICommunicationService>(INTERFACE_TYPE.CommunicationService)
+      .to(TextBelt);
+  }
 
   private configureMiddleWare(): void {
     this.inversify_server.setConfig((app) => {
@@ -29,7 +48,7 @@ export class Application {
       app.use(
         express.urlencoded({
           extended: true,
-        })
+        }),
       );
       app.use(helmet());
       app.use(cors());
@@ -72,13 +91,15 @@ export class Application {
         (error: Error, req: Request, res: Response, next: NextFunction) => {
           error.message = error.message || "Internal server error";
 
-          return res.status(500).json({
+          res.status(500).json({
             status: "failed",
             message: error.message,
             stackTrace:
               process.env.NODE_ENV !== "production" ? error.stack : null,
           });
-        }
+
+          return next();
+        },
       );
     }
 

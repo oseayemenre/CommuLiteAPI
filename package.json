@@ -17,6 +17,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@prisma/client": "^5.18.0",
     "aws-sdk": "^2.1682.0",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
@@ -28,9 +29,11 @@
     "jest": "^29.7.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "prisma": "^5.18.0",
     "reflect-metadata": "^0.2.2",
     "socket.io": "^4.7.5",
-    "supertest": "^7.0.0"
+    "supertest": "^7.0.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

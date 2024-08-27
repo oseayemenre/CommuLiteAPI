@@ -23,5 +23,7 @@ jobs:
         run: npm run lint
       - name: Run Prettier
         run: npm run format:check
+      - name: Print working directory
+        run: pwd
       - name: Run tests
         run: npm test

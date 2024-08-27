@@ -19,7 +19,7 @@ export class UserService implements IUserService {
     @inject(INTERFACE_TYPE.UserRepository) repository: IUserRepository,
     @inject(INTERFACE_TYPE.CommunicationService)
     communicationService: ICommunicationService,
-    @inject(INTERFACE_TYPE.Bcrypt) bcrypt: IBcrypt
+    @inject(INTERFACE_TYPE.Bcrypt) bcrypt: IBcrypt,
   ) {
     this.repository = repository;
     this.communicationService = communicationService;
@@ -27,7 +27,7 @@ export class UserService implements IUserService {
   }
 
   public async onCreateAccount(
-    data: IOnCreateAccountParam
+    data: IOnCreateAccountParam,
   ): Promise<IResponse<void>> {
     const phone_no = data.phone_no.toString();
     const user = await this.repository.findUser(phone_no);

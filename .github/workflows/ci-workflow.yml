@@ -11,8 +11,8 @@ jobs:
       matrix:
         node-version: [20.x]
     env:
-      REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
-      ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+      REFRESH_SECRET: ${{ secrets.REFRESH_SECRET }}
+      ACCESS_SECRET: ${{ secrets.ACCESS_SECRET }}
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4

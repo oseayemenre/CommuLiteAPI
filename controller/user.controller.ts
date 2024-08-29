@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response } from "express";
-import { controller, httpPost } from "inversify-express-utils";
+import { controller, httpPatch, httpPost } from "inversify-express-utils";
 import { IUserService } from "../interface/user.interface";
 import { ValidateMiddleware } from "../middleware/validate.middleware";
-import { createAccountSchema } from "../schema/user.schema";
+import { createAccountSchema, verifyOTPSchema } from "../schema/user.schema";
 import { inject } from "inversify";
 import { INTERFACE_TYPE } from "../utils/dependency";
+import { RouteProtectionMiddleware } from "../middleware/route-protection.middleware";
 
 @controller("/user")
 export class UserController {
@@ -25,6 +26,33 @@ export class UserController {
   ): Promise<Response | undefined> {
     try {
       const response = await this.service.onCreateAccount(req.body);
+      res.cookie("access_token", response.body.data?.access_token, {
+        httpOnly: true,
+        maxAge: 15 * 60 * 10000,
+      });
+      res.cookie("refresh_token", response.body.data?.refresh_token, {
+        httpOnly: true,
+        maxAge: 365 * 24 * 60 * 60 * 1000,
+      });
+      return res.status(response.statusCode).json(response.body);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  @httpPatch(
+    "/verify-otp",
+    ValidateMiddleware.prototype.validateData(verifyOTPSchema),
+    RouteProtectionMiddleware.prototype.privateRoute.bind(
+      new RouteProtectionMiddleware(),
+    ),
+  )
+  public async verifyOTP(req: Request, res: Response, next: NextFunction) {
+    try {
+      const response = await this.service.onVerifyOTP({
+        number: req.user?.number as string,
+        otp: req.body.otp.toString(),
+      });
 
       return res.status(response.statusCode).json(response.body);
     } catch (e) {

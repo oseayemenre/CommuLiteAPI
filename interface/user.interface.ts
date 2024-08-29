@@ -13,8 +13,19 @@ export interface IOnCreateAccountParam {
   phone_no: number;
 }
 
+export interface IOnVerifyOtpParam {
+  number: string;
+  otp: number;
+}
+
+export interface ITokens {
+  access_token: string;
+  refresh_token: string;
+}
+
 export interface IUserService {
-  onCreateAccount(data: IOnCreateAccountParam): Promise<IResponse<void>>;
+  onCreateAccount(data: IOnCreateAccountParam): Promise<IResponse<ITokens>>;
+  onVerifyOTP(data: IOnVerifyOtpParam): Promise<IResponse<void>>;
 }
 
 export interface IAddOtpParam {
@@ -22,8 +33,15 @@ export interface IAddOtpParam {
   otp: string;
 }
 
+export type TUser = User & {
+  otp: {
+    otp: string;
+  };
+};
+
 export interface IUserRepository {
-  findUser(phone_no: string): Promise<User | null>;
+  findUserByPhoneNo(phone_no: string): Promise<TUser | null>;
   createUser(phone_no: string): Promise<User>;
   addOtp(data: IAddOtpParam): Promise<void>;
+  verifyUser(id: string): Promise<void>;
 }

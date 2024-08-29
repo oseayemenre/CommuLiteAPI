@@ -3,4 +3,5 @@ export const INTERFACE_TYPE = {
   UserRepository: Symbol.for("UserRepository"),
   Bcrypt: Symbol.for("Bcrypt"),
   CommunicationService: Symbol.for("CommunicationService"),
+  Jwt: Symbol.for("JWT"),
 };

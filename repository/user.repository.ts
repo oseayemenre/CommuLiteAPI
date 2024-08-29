@@ -1,5 +1,9 @@
 import { PrismaClient, User } from "@prisma/client";
-import { IAddOtpParam, IUserRepository } from "../interface/user.interface";
+import {
+  IAddOtpParam,
+  IUserRepository,
+  TUser,
+} from "../interface/user.interface";
 import { injectable } from "inversify";
 
 @injectable()
@@ -10,12 +14,16 @@ export class UserRepository implements IUserRepository {
     this.db = new PrismaClient();
   }
 
-  public async findUser(phone_no: string): Promise<User | null> {
-    return await this.db.user.findUnique({
+  public async findUserByPhoneNo(phone_no: string): Promise<TUser | null> {
+    return (await this.db.user.findUnique({
       where: {
         phone_no: parseInt(phone_no),
       },
-    });
+
+      include: {
+        otp: true,
+      },
+    })) as TUser;
   }
   public async createUser(phone_no: string): Promise<User> {
     return await this.db.user.create({
@@ -33,6 +41,18 @@ export class UserRepository implements IUserRepository {
             id: data.user,
           },
         },
+      },
+    });
+  }
+
+  public async verifyUser(id: string): Promise<void> {
+    await this.db.user.update({
+      where: {
+        id: id,
+      },
+
+      data: {
+        verified: true,
       },
     });
   }

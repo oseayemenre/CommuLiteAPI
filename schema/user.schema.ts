@@ -7,3 +7,7 @@ const countDigits = (str: string): number => {
 export const createAccountSchema = z.object({
   phone_no: z.string().refine((value) => countDigits(value) === 11),
 });
+
+export const verifyOTPSchema = z.object({
+  otp: z.number(),
+});

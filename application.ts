@@ -4,6 +4,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import cors from "cors";
 import http from "http";
+import cookieParser from "cookie-parser";
 import { Container } from "inversify";
 import { InversifyExpressServer } from "inversify-express-utils";
 import { Server } from "socket.io";
@@ -17,6 +18,8 @@ import { IBcrypt } from "./interface/bcrypt.interface";
 import { Bcrypt } from "./utils/bcrypt";
 import { ICommunicationService } from "./interface/communication-service.interface";
 import { TextBelt } from "./utils/text-belt";
+import { IJWT } from "./interface/jwt.interface";
+import { JWT } from "./utils/jwt";
 
 export class Application {
   private readonly container: Container;
@@ -40,6 +43,7 @@ export class Application {
     this.container
       .bind<ICommunicationService>(INTERFACE_TYPE.CommunicationService)
       .to(TextBelt);
+    this.container.bind<IJWT>(INTERFACE_TYPE.Jwt).to(JWT);
   }
 
   private configureMiddleWare(): void {
@@ -53,6 +57,7 @@ export class Application {
       app.use(helmet());
       app.use(cors());
       app.use(morgan("dev"));
+      app.use(cookieParser());
     });
   }
 

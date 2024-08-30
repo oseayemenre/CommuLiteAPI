@@ -20,6 +20,8 @@ import { ICommunicationService } from "./interface/communication-service.interfa
 import { TextBelt } from "./utils/text-belt";
 import { IJWT } from "./interface/jwt.interface";
 import { JWT } from "./utils/jwt";
+import { IS3 } from "./interface/s3.interface";
+import { S3 } from "./utils/s3";
 
 export class Application {
   private readonly container: Container;
@@ -44,6 +46,7 @@ export class Application {
       .bind<ICommunicationService>(INTERFACE_TYPE.CommunicationService)
       .to(TextBelt);
     this.container.bind<IJWT>(INTERFACE_TYPE.Jwt).to(JWT);
+    this.container.bind<IS3>(INTERFACE_TYPE.S3).to(S3);
   }
 
   private configureMiddleWare(): void {

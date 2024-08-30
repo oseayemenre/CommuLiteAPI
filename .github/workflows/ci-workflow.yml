@@ -10,6 +10,13 @@ jobs:
     strategy:
       matrix:
         node-version: [20.x]
+    env:
+      REFRESH_SECRET: ${{ secrets.REFRESH_SECRET }}
+      ACCESS_SECRET: ${{ secrets.ACCESS_SECRET }}
+      AWS_ACCESS_KEY: ${{secrets.AWS_ACCESS_KEY}}
+      AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+      AWS_S3_REGION: ${{ secrets.AWS_S3_REGION}}
+      AWS_BUCKET: ${{ secrets.AWS_BUCKET }}
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4

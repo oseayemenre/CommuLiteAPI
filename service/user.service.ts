@@ -3,6 +3,8 @@ import { IBcrypt } from "../interface/bcrypt.interface";
 import { ICommunicationService } from "../interface/communication-service.interface";
 import {
   IOnCreateAccountParam,
+  IOnSetupUserParam,
+  IOnSetupUserResponse,
   IOnVerifyOtpParam,
   IResponse,
   ITokens,
@@ -12,6 +14,7 @@ import {
 import { INTERFACE_TYPE } from "../utils/dependency";
 import { IJWT } from "../interface/jwt.interface";
 import dotenv from "dotenv";
+import { IS3 } from "../interface/s3.interface";
 
 dotenv.config();
 
@@ -21,6 +24,7 @@ export class UserService implements IUserService {
   private readonly communicationService: ICommunicationService;
   private readonly bcrypt: IBcrypt;
   private readonly jwt: IJWT;
+  private readonly bucket: IS3;
 
   constructor(
     @inject(INTERFACE_TYPE.UserRepository) repository: IUserRepository,
@@ -28,12 +32,15 @@ export class UserService implements IUserService {
     communicationService: ICommunicationService,
     @inject(INTERFACE_TYPE.Bcrypt) bcrypt: IBcrypt,
     @inject(INTERFACE_TYPE.Jwt) jwt: IJWT,
+    @inject(INTERFACE_TYPE.S3) bucket: IS3,
   ) {
     this.repository = repository;
     this.communicationService = communicationService;
     this.bcrypt = bcrypt;
     this.jwt = jwt;
+    this.bucket = bucket;
   }
+
   public async onCreateAccount(
     data: IOnCreateAccountParam,
   ): Promise<IResponse<ITokens>> {
@@ -125,6 +132,33 @@ export class UserService implements IUserService {
       body: {
         status: "success",
         message: "User verified",
+      },
+    };
+  }
+
+  public async onSetupUser(
+    data: IOnSetupUserParam,
+  ): Promise<IResponse<IOnSetupUserResponse>> {
+    const image = await this.bucket.uploadFile(
+      data.image as Express.Multer.File,
+    );
+
+    const user = await this.repository.setUpUser({
+      phone_no: data.phone_no,
+      image: image,
+      username: data.username,
+    });
+
+    return {
+      statusCode: 200,
+      body: {
+        status: "success",
+        message: "User profile set",
+        data: {
+          username: user.name as string,
+          phone_no: user.phone_no,
+          profile_photo: user.profile_photo as string,
+        },
       },
     };
   }

@@ -11,3 +11,7 @@ export const createAccountSchema = z.object({
 export const verifyOTPSchema = z.object({
   otp: z.number(),
 });
+
+export const setupUserSchema = z.object({
+  username: z.string(),
+});

@@ -4,4 +4,5 @@ export const INTERFACE_TYPE = {
   Bcrypt: Symbol.for("Bcrypt"),
   CommunicationService: Symbol.for("CommunicationService"),
   Jwt: Symbol.for("JWT"),
+  S3: Symbol.for("S3"),
 };

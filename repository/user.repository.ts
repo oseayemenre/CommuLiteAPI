@@ -1,6 +1,7 @@
 import { PrismaClient, User } from "@prisma/client";
 import {
   IAddOtpParam,
+  ISetupUserParam,
   IUserRepository,
   TUser,
 } from "../interface/user.interface";
@@ -17,7 +18,7 @@ export class UserRepository implements IUserRepository {
   public async findUserByPhoneNo(phone_no: string): Promise<TUser | null> {
     return (await this.db.user.findUnique({
       where: {
-        phone_no: parseInt(phone_no),
+        phone_no: phone_no,
       },
 
       include: {
@@ -28,7 +29,7 @@ export class UserRepository implements IUserRepository {
   public async createUser(phone_no: string): Promise<User> {
     return await this.db.user.create({
       data: {
-        phone_no: parseInt(phone_no),
+        phone_no: phone_no,
       },
     });
   }
@@ -55,5 +56,20 @@ export class UserRepository implements IUserRepository {
         verified: true,
       },
     });
+  }
+
+  public async setUpUser(data: ISetupUserParam): Promise<User> {
+    const user = await this.db.user.update({
+      where: {
+        phone_no: data.phone_no,
+      },
+
+      data: {
+        profile_photo: data.image,
+        name: data.username,
+      },
+    });
+
+    return user;
   }
 }

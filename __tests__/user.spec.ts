@@ -7,6 +7,7 @@ import { UserRepository } from "../repository/user.repository";
 import { TextBelt } from "../utils/text-belt";
 import { JWT } from "../utils/jwt";
 import { Bcrypt } from "../utils/bcrypt";
+import { S3 } from "../utils/s3";
 
 let app: http.Server;
 const refresh_token = new JWT().createToken({
@@ -80,7 +81,7 @@ describe("POST /user/create-account", () => {
   });
 });
 
-describe("PATCH /verify-otp", () => {
+describe("PATCH /user/verify-otp", () => {
   it("should return 400 if data could not be validated", async () => {
     const response = await supertest(app)
       .patch("/user/verify-otp")
@@ -181,5 +182,87 @@ describe("PATCH /verify-otp", () => {
     expect(response.status).toBe(200);
     expect(response.body.status).toBe("success");
     expect(response.body.message).toBe("User verified");
+  });
+});
+
+describe("PATH /user/setup", () => {
+  it("should return 400 if data could not be validated", async () => {
+    const response = await supertest(app)
+      .patch("/user/setup")
+      .send({ username: 1 });
+
+    expect(response.status).toBe(400);
+    expect(response.body.status).toBe("failed");
+    expect(response.body.message).toBe("Bad request");
+  });
+
+  it("should return 401 if no token is found", async () => {
+    const response = await supertest(app)
+      .patch("/user/setup")
+      .send({ username: "user1" });
+
+    expect(response.status).toBe(401);
+    expect(response.body.status).toBe("failed");
+    expect(response.body.message).toBe("Login to access this route");
+  });
+
+  it("should return 500 if the token has been altered", async () => {
+    const response = await supertest(app)
+      .patch("/user/setup")
+      .send({ username: "user1" })
+      .set("Cookie", [`refresh_token=altered-token`]);
+
+    expect(response.status).toBe(500);
+  });
+
+  it("should return 401 if user is not verified", async () => {
+    const mockCheckVerifiedUser = jest
+      .spyOn(UserRepository.prototype, "findUserByPhoneNo")
+      .mockResolvedValueOnce({ verified: false } as any);
+
+    const response = await supertest(app)
+      .patch("/user/setup")
+      .send({ username: "user1" })
+      .set("Cookie", [`refresh_token=${refresh_token}`]);
+
+    expect(mockCheckVerifiedUser).toHaveBeenCalled();
+    expect(response.status).toBe(401);
+    expect(response.body.status).toBe("failed");
+    expect(response.body.message).toBe(
+      "User is not verifiied. Verify your account first before you can continue using our service",
+    );
+  });
+
+  it("should return 200 and setup the user", async () => {
+    const mockCheckVerifiedUser = jest
+      .spyOn(UserRepository.prototype, "findUserByPhoneNo")
+      .mockResolvedValueOnce({ verified: true } as any);
+
+    const mockAWSS3 = jest
+      .spyOn(S3.prototype, "uploadFile")
+      .mockResolvedValueOnce("image url");
+
+    const mockSetUpUser = jest
+      .spyOn(UserRepository.prototype, "setUpUser")
+      .mockResolvedValueOnce({
+        name: "user1",
+        phone_no: "11111111111",
+        profile_photo: "profile photo",
+      } as any);
+
+    const response = await supertest(app)
+      .patch("/user/setup")
+      .send({ username: "user1" })
+      .set("Cookie", [`refresh_token=${refresh_token}`]);
+
+    expect(mockCheckVerifiedUser).toHaveBeenCalled();
+    expect(mockAWSS3).toHaveBeenCalled();
+    expect(mockSetUpUser).toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe("success");
+    expect(response.body.message).toBe("User profile set");
+    expect(response.body.data.username).toBe("user1");
+    expect(response.body.data.phone_no).toBe("11111111111");
+    expect(response.body.data.profile_photo).toBe("profile photo");
   });
 });

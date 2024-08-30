@@ -10,7 +10,6 @@ import {
 import { inject } from "inversify";
 import { INTERFACE_TYPE } from "../utils/dependency";
 import { RouteProtectionMiddleware } from "../middleware/route-protection.middleware";
-// import { VerifiedUser } from "../middleware/verified.middleware";
 import { Multer } from "../utils/multer";
 import { VerifiedUser } from "../middleware/verified.middleware";
 

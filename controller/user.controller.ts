@@ -48,10 +48,10 @@ export class UserController {
 
   @httpPatch(
     "/verify-otp",
-    ValidateMiddleware.prototype.validateData(verifyOTPSchema),
     RouteProtectionMiddleware.prototype.privateRoute.bind(
       new RouteProtectionMiddleware(),
     ),
+    ValidateMiddleware.prototype.validateData(verifyOTPSchema),
   )
   public async verifyOTP(req: Request, res: Response, next: NextFunction) {
     try {
@@ -69,11 +69,11 @@ export class UserController {
   @httpPatch(
     "/setup",
     new Multer().upload.single("avatar"),
-    ValidateMiddleware.prototype.validateData(setupUserSchema),
     RouteProtectionMiddleware.prototype.privateRoute.bind(
       new RouteProtectionMiddleware(),
     ),
     VerifiedUser.prototype.checkVerifiedUser.bind(new VerifiedUser()),
+    ValidateMiddleware.prototype.validateData(setupUserSchema),
   )
   public async setupUser(req: Request, res: Response, next: NextFunction) {
     try {

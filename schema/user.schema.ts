@@ -13,5 +13,5 @@ export const verifyOTPSchema = z.object({
 });
 
 export const setupUserSchema = z.object({
-  username: z.string(),
+  username: z.string().min(1),
 });

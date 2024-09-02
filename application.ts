@@ -10,6 +10,8 @@ import { InversifyExpressServer } from "inversify-express-utils";
 import { Server } from "socket.io";
 import { WebSocket } from "./utils/socket";
 import "./controller/user.controller";
+import "./controller/message.controller";
+import "./controller/conversation.controller";
 import { IUserRepository, IUserService } from "./interface/user.interface";
 import { INTERFACE_TYPE } from "./utils/dependency";
 import { UserService } from "./service/user.service";
@@ -22,6 +24,19 @@ import { IJWT } from "./interface/jwt.interface";
 import { JWT } from "./utils/jwt";
 import { IS3 } from "./interface/s3.interface";
 import { S3 } from "./utils/s3";
+import {
+  IMessageRepository,
+  IMessageService,
+} from "./interface/message.interface";
+import { MessageService } from "./service/message.service";
+import { MessageRepository } from "./repository/message.repository";
+import {
+  IConversationRepository,
+  IConversationService,
+} from "./interface/conversation.interface";
+import { ConversationService } from "./service/conversation.service";
+import { ConversationRepository } from "./repository/conversation.repository";
+import { ClientToServer, ServerToClient } from "./interface/socket.interface";
 
 export class Application {
   private readonly container: Container;
@@ -47,6 +62,18 @@ export class Application {
       .to(TextBelt);
     this.container.bind<IJWT>(INTERFACE_TYPE.Jwt).to(JWT);
     this.container.bind<IS3>(INTERFACE_TYPE.S3).to(S3);
+    this.container
+      .bind<IMessageService>(INTERFACE_TYPE.MessageService)
+      .to(MessageService);
+    this.container
+      .bind<IMessageRepository>(INTERFACE_TYPE.MessageRepository)
+      .to(MessageRepository);
+    this.container
+      .bind<IConversationService>(INTERFACE_TYPE.ConversationService)
+      .to(ConversationService);
+    this.container
+      .bind<IConversationRepository>(INTERFACE_TYPE.ConversationRepository)
+      .to(ConversationRepository);
   }
 
   private configureMiddleWare(): void {
@@ -69,7 +96,7 @@ export class Application {
       this.app = this.inversify_server.build();
       this.http_server = http.createServer(this.app);
 
-      const io = new Server(this.http_server);
+      const io = new Server<ClientToServer, ServerToClient>(this.http_server);
 
       new WebSocket().socketEvents(io);
     }

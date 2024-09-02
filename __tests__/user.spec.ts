@@ -85,7 +85,8 @@ describe("PATCH /user/verify-otp", () => {
   it("should return 400 if data could not be validated", async () => {
     const response = await supertest(app)
       .patch("/user/verify-otp")
-      .send({ otp: "1" });
+      .send({ otp: "1" })
+      .set("Cookie", [`refresh_token=${refresh_token}`]);
 
     expect(response.status).toBe(400);
     expect(response.body.status).toBe("failed");
@@ -187,10 +188,16 @@ describe("PATCH /user/verify-otp", () => {
 
 describe("PATH /user/setup", () => {
   it("should return 400 if data could not be validated", async () => {
+    const mockCheckVerifiedUser = jest
+      .spyOn(UserRepository.prototype, "findUserByPhoneNo")
+      .mockResolvedValueOnce({ verified: true } as any);
+
     const response = await supertest(app)
       .patch("/user/setup")
-      .send({ username: 1 });
+      .send({ username: 1 })
+      .set("Cookie", [`refresh_token=${refresh_token}`]);
 
+    expect(mockCheckVerifiedUser).toHaveBeenCalled();
     expect(response.status).toBe(400);
     expect(response.body.status).toBe("failed");
     expect(response.body.message).toBe("Bad request");

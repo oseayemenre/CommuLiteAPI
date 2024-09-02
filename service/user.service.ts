@@ -6,7 +6,6 @@ import {
   IOnSetupUserParam,
   IOnSetupUserResponse,
   IOnVerifyOtpParam,
-  IResponse,
   ITokens,
   IUserRepository,
   IUserService,
@@ -15,6 +14,7 @@ import { INTERFACE_TYPE } from "../utils/dependency";
 import { IJWT } from "../interface/jwt.interface";
 import dotenv from "dotenv";
 import { IS3 } from "../interface/s3.interface";
+import { IResponse } from "../interface/response.interface";
 
 dotenv.config();
 
@@ -100,7 +100,7 @@ export class UserService implements IUserService {
     };
   }
 
-  public async onVerifyOTP(data: IOnVerifyOtpParam): Promise<IResponse<void>> {
+  public async onVerifyOTP(data: IOnVerifyOtpParam): Promise<IResponse<null>> {
     const user = await this.repository.findUserByPhoneNo(data.number);
 
     if (user?.verified) {

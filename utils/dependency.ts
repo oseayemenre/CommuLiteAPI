@@ -5,4 +5,8 @@ export const INTERFACE_TYPE = {
   CommunicationService: Symbol.for("CommunicationService"),
   Jwt: Symbol.for("JWT"),
   S3: Symbol.for("S3"),
+  MessageService: Symbol.for("MessageService"),
+  MessageRepository: Symbol.for("MessageRepository"),
+  ConversationService: Symbol.for("ConversationService"),
+  ConversationRepository: Symbol.for("ConversationRepository"),
 };

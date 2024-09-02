@@ -1,13 +1,5 @@
 import { User } from "@prisma/client";
-
-export interface IResponse<T> {
-  statusCode: number;
-  body: {
-    status: "success" | "failed";
-    message: string;
-    data?: T;
-  };
-}
+import { IResponse } from "./response.interface";
 
 export interface IOnCreateAccountParam {
   phone_no: number;
@@ -37,7 +29,7 @@ export interface IOnSetupUserResponse {
 
 export interface IUserService {
   onCreateAccount(data: IOnCreateAccountParam): Promise<IResponse<ITokens>>;
-  onVerifyOTP(data: IOnVerifyOtpParam): Promise<IResponse<void>>;
+  onVerifyOTP(data: IOnVerifyOtpParam): Promise<IResponse<null>>;
   onSetupUser(
     data: IOnSetupUserParam,
   ): Promise<IResponse<IOnSetupUserResponse>>;

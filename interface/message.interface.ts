@@ -1,4 +1,4 @@
-import { Message } from "@prisma/client";
+import { Conversation, Message } from "@prisma/client";
 import { IResponse } from "./response.interface";
 
 export interface IOnSendMessageParams {
@@ -22,6 +22,12 @@ export interface IDeleteMessageForSelf {
   messageId: string;
 }
 
+export interface IOnSendMessageToGroup {
+  userId: string;
+  groupId: string;
+  message: string;
+}
+
 export interface IMessageService {
   onSendMessage(data: IOnSendMessageParams): Promise<IResponse<null>>;
   onEditMessage(data: IOnEditParams): Promise<IResponse<null>>;
@@ -29,6 +35,7 @@ export interface IMessageService {
   onDeleteMessageForSelf(
     data: IOnDeleteMessageForSelf,
   ): Promise<IResponse<null>>;
+  onSendMessageToGroup(data: IOnSendMessageToGroup): Promise<IResponse<null>>;
 }
 
 export interface IMessageRepository {
@@ -37,4 +44,9 @@ export interface IMessageRepository {
   editMessage(data: IOnEditParams): Promise<void>;
   deleteMessage(id: string): Promise<void>;
   deleteMessageForSelf(data: IDeleteMessageForSelf): Promise<void>;
+  checkIfUserBelongsToGroup(
+    data: IOnSendMessageToGroup,
+  ): Promise<Conversation | null>;
+  checkGroupStatus(groupId: string): Promise<Conversation>;
+  sendMessageToGroup(data: IOnSendMessageToGroup): Promise<void>;
 }

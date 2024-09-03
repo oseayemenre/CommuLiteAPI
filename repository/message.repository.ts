@@ -1,9 +1,10 @@
-import { Message, PrismaClient } from "@prisma/client";
+import { Conversation, Message, PrismaClient } from "@prisma/client";
 import {
   IDeleteMessageForSelf,
   IMessageRepository,
   IOnEditParams,
   IOnSendMessageParams,
+  IOnSendMessageToGroup,
 } from "../interface/message.interface";
 import { injectable } from "inversify";
 
@@ -136,5 +137,44 @@ export class MessageRepository implements IMessageRepository {
         },
       });
     }
+  }
+
+  public async checkIfUserBelongsToGroup(
+    data: IOnSendMessageToGroup,
+  ): Promise<Conversation | null> {
+    return await this.db.conversation.findUnique({
+      where: {
+        id: data.groupId,
+        users: {
+          some: {
+            id: data.userId,
+          },
+        },
+      },
+    });
+  }
+  public async checkGroupStatus(groupId: string): Promise<Conversation> {
+    return (await this.db.conversation.findUnique({
+      where: {
+        id: groupId,
+      },
+    })) as Conversation;
+  }
+  public async sendMessageToGroup(data: IOnSendMessageToGroup): Promise<void> {
+    await this.db.message.create({
+      data: {
+        message: data.message,
+        sender: {
+          connect: {
+            id: data.userId,
+          },
+        },
+        conversation: {
+          connect: {
+            id: data.groupId,
+          },
+        },
+      },
+    });
   }
 }

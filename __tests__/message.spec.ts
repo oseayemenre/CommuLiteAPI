@@ -345,3 +345,130 @@ describe("DELETE /message/self/:id", () => {
     expect(response.body.message).toBe("Message deleted");
   });
 });
+
+describe("POST /message/group/:id", () => {
+  it("should return 401 if no token is found", async () => {
+    const response = await supertest(app).post("/message/group/123");
+
+    expect(response.status).toBe(401);
+    expect(response.body.status).toBe("failed");
+    expect(response.body.message).toBe("Login to access this route");
+  });
+
+  it("should return 500 if the token has been altered", async () => {
+    const response = await supertest(app)
+      .post("/message/group/123")
+      .set("Cookie", [`refresh_token=altered-token`]);
+
+    expect(response.status).toBe(500);
+  });
+
+  it("should return 401 if user is not verified", async () => {
+    const mockCheckVerifiedUser = jest
+      .spyOn(UserRepository.prototype, "findUserByPhoneNo")
+      .mockResolvedValueOnce({ verified: false } as any);
+
+    const response = await supertest(app)
+      .post("/message/group/123")
+      .set("Cookie", [`refresh_token=${refresh_token}`]);
+
+    expect(mockCheckVerifiedUser).toHaveBeenCalled();
+    expect(response.status).toBe(401);
+    expect(response.body.status).toBe("failed");
+    expect(response.body.message).toBe(
+      "User is not verifiied. Verify your account first before you can continue using our service",
+    );
+  });
+
+  it("should return 400 if data could not be validated", async () => {
+    const mockCheckVerifiedUser = jest
+      .spyOn(UserRepository.prototype, "findUserByPhoneNo")
+      .mockResolvedValueOnce({ verified: true } as any);
+
+    const response = await supertest(app)
+      .post("/message/group/123")
+      .set("Cookie", [`refresh_token=${refresh_token}`]);
+
+    expect(mockCheckVerifiedUser).toHaveBeenCalled();
+    expect(response.status).toBe(400);
+    expect(response.body.status).toBe("failed");
+    expect(response.body.message).toBe("Bad request");
+  });
+
+  it("should return 401 if user doesn't belong to group", async () => {
+    const mockCheckVerifiedUser = jest
+      .spyOn(UserRepository.prototype, "findUserByPhoneNo")
+      .mockResolvedValueOnce({ verified: true } as any);
+
+    const mockCheckIfUserBelongsToGroup = jest
+      .spyOn(MessageRepository.prototype, "checkIfUserBelongsToGroup")
+      .mockResolvedValueOnce(null);
+
+    const response = await supertest(app)
+      .post("/message/group/123")
+      .send({ message: "Test" })
+      .set("Cookie", [`refresh_token=${refresh_token}`]);
+
+    expect(mockCheckVerifiedUser).toHaveBeenCalled();
+    expect(mockCheckIfUserBelongsToGroup).toHaveBeenCalled();
+    expect(response.status).toBe(401);
+    expect(response.body.status).toBe("failed");
+    expect(response.body.message).toBe("User doesn't belong to this group");
+  });
+
+  it("should return 401 if group is locked", async () => {
+    const mockCheckVerifiedUser = jest
+      .spyOn(UserRepository.prototype, "findUserByPhoneNo")
+      .mockResolvedValueOnce({ verified: true } as any);
+
+    const mockCheckIfUserBelongsToGroup = jest
+      .spyOn(MessageRepository.prototype, "checkIfUserBelongsToGroup")
+      .mockResolvedValueOnce(true as any);
+
+    const mockCheckGroupStatus = jest
+      .spyOn(MessageRepository.prototype, "checkGroupStatus")
+      .mockResolvedValueOnce({ status: "CLOSED" } as any);
+
+    const response = await supertest(app)
+      .post("/message/group/123")
+      .send({ message: "Test" })
+      .set("Cookie", [`refresh_token=${refresh_token}`]);
+
+    expect(mockCheckVerifiedUser).toHaveBeenCalled();
+    expect(mockCheckIfUserBelongsToGroup).toHaveBeenCalled();
+    expect(mockCheckGroupStatus).toHaveBeenCalled();
+    expect(response.status).toBe(401);
+    expect(response.body.status).toBe("failed");
+    expect(response.body.message).toBe("Group has been locked by an admin");
+  });
+
+  it("should return 200 and send message to group", async () => {
+    const mockCheckVerifiedUser = jest
+      .spyOn(UserRepository.prototype, "findUserByPhoneNo")
+      .mockResolvedValueOnce({ verified: true } as any);
+
+    const mockCheckIfUserBelongsToGroup = jest
+      .spyOn(MessageRepository.prototype, "checkIfUserBelongsToGroup")
+      .mockResolvedValueOnce(true as any);
+
+    const mockCheckGroupStatus = jest
+      .spyOn(MessageRepository.prototype, "checkGroupStatus")
+      .mockResolvedValueOnce({ status: "OPEN" } as any);
+
+    const mockSendMessageToGroup = jest
+      .spyOn(MessageRepository.prototype, "sendMessageToGroup")
+      .mockResolvedValueOnce(null as any);
+    const response = await supertest(app)
+      .post("/message/group/123")
+      .send({ message: "Test" })
+      .set("Cookie", [`refresh_token=${refresh_token}`]);
+
+    expect(mockCheckVerifiedUser).toHaveBeenCalled();
+    expect(mockCheckIfUserBelongsToGroup).toHaveBeenCalled();
+    expect(mockCheckGroupStatus).toHaveBeenCalled();
+    expect(mockSendMessageToGroup).toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(response.body.status).toBe("success");
+    expect(response.body.message).toBe("Message sent");
+  });
+});

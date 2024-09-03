@@ -86,4 +86,25 @@ export class MessageController {
       next(e);
     }
   }
+
+  @httpPost(
+    "/group/:id",
+    ValidateMiddleware.prototype.validateData(sendMessageSchema),
+  )
+  public async sendMessageToGroup(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const response = await this.service.onSendMessageToGroup({
+        ...req.body,
+        userId: req.user?.number,
+      });
+
+      return res.status(response.statusCode).json(response.body);
+    } catch (e) {
+      next(e);
+    }
+  }
 }

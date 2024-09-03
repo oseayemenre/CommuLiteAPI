@@ -5,10 +5,12 @@ import {
   IOnDeleteMessageForSelf,
   IOnEditParams,
   IOnSendMessageParams,
+  IOnSendMessageToGroup,
 } from "../interface/message.interface";
 import { INTERFACE_TYPE } from "../utils/dependency";
 import { IResponse } from "../interface/response.interface";
 import { IUserRepository } from "../interface/user.interface";
+import { Status } from "@prisma/client";
 
 @injectable()
 export class MessageService implements IMessageService {
@@ -99,6 +101,44 @@ export class MessageService implements IMessageService {
       body: {
         status: "success",
         message: "Message deleted",
+      },
+    };
+  }
+
+  public async onSendMessageToGroup(
+    data: IOnSendMessageToGroup,
+  ): Promise<IResponse<null>> {
+    const user = await this.repository.checkIfUserBelongsToGroup(data);
+
+    if (!user) {
+      return {
+        statusCode: 401,
+        body: {
+          status: "failed",
+          message: "User doesn't belong to this group",
+        },
+      };
+    }
+
+    const group = await this.repository.checkGroupStatus(data.groupId);
+
+    if (group.status !== Status.OPEN) {
+      return {
+        statusCode: 401,
+        body: {
+          status: "failed",
+          message: "Group has been locked by an admin",
+        },
+      };
+    }
+
+    await this.repository.sendMessageToGroup(data);
+
+    return {
+      statusCode: 200,
+      body: {
+        status: "success",
+        message: "Message sent",
       },
     };
   }
